@@ -12,7 +12,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=list[RecipeDetail])
+@router.get("/", response_model=list[RecipeDetail],description="Список рецептов",summary="Список рецептов")
 async def get_recipes(
         cuisine: str | None = None,
         difficulty: str | None = None,
@@ -43,7 +43,7 @@ async def get_recipes(
     return result
 
 
-@router.get("/by-ingredients/", response_model=list[RecipeDetail])
+@router.get("/by-ingredients/", response_model=list[RecipeDetail],summary="Поиск по нескольким ингредиентам")
 async def get_recipes_by_multiple_ingredients(
         ingredients: list[str] = Query(default=[]),
 ):
@@ -66,7 +66,7 @@ async def get_recipes_by_multiple_ingredients(
     return matched_recipes
 
 
-@router.get("/random", response_model=RecipeDetail)
+@router.get("/random", response_model=RecipeDetail,summary="Случайный рецепт")
 async def get_random_recipe(
         cuisine: CuisineEnum | None = None,
         is_vegetarian: bool | None = None,
@@ -92,7 +92,7 @@ async def get_random_recipe(
     return random.choice(result)
 
 
-@router.get("/stats",response_model=RecipeStats)
+@router.get("/stats",response_model=RecipeStats,summary="Статистика")
 async def get_recipe_stats():
     result = db_recipes.copy()
     if result:
@@ -120,7 +120,7 @@ async def get_recipe_stats():
     return None
 
 
-@router.get("/by-ingredients/{ingredient}", response_model=list[RecipeDetail])
+@router.get("/by-ingredients/{ingredient}", response_model=list[RecipeDetail],summary="Рецепты по ингредиенту")
 async def get_recipes_by_single_ingredient(
         ingredients: str,
 ):
@@ -138,7 +138,7 @@ async def get_recipes_by_single_ingredient(
 
 
 
-@router.get("/{slug}/scale", response_model=list[RecipeDetail])
+@router.get("/{slug}/scale", response_model=list[RecipeDetail],summary="Калькулятор порций")
 async def get_recipe_scale(
         slug: str,
         servings: int | None = 1,
@@ -152,7 +152,7 @@ async def get_recipe_scale(
     if not result:
         raise HTTPException(status_code=404, detail="Recipe not found")
 
-    # Масштабируем найденные рецепты
+
     for recipe in result:
         recipe["servings"] = servings
         recipe["calories_per_serving"] = recipe["calories_per_serving"] * servings
@@ -164,7 +164,7 @@ async def get_recipe_scale(
     return result
 
 
-@router.get("/{slug}", response_model=RecipeDetail)
+@router.get("/{slug}", response_model=RecipeDetail,description="Один рецепт",summary="Один рецепт")
 async def get_recipe_detail(slug: str):
     for rec in db_recipes:
         if rec["slug"] == slug:
@@ -172,7 +172,7 @@ async def get_recipe_detail(slug: str):
 
     raise HTTPException(status_code=404, detail="Recipe not found")
 
-@router.get("/{slug}/similar", response_model=list[RecipeDetail])
+@router.get("/{slug}/similar", response_model=list[RecipeDetail],summary="Похожие рецепты")
 async def get_similar_recipes(slug: str):
     get_db = db_recipes.copy()
     current = next(
