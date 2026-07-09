@@ -1,17 +1,17 @@
 from fastapi import FastAPI
 from src.backend.api.v1.recipes import router as recipes_router
-
+from src.backend.core.config import settings
 # Создали объект приложения FASTapi
 app = FastAPI(
-    title="Recipe Finder API",  # отображается в swagger ui название
-    description="Платформа для Рецептов",  # описание проекта можно использовать марк даун
+    title=f"{settings.app_name}",
+    description="Платформа для Рецептов",
     version="0.1.0"
 )
 
 
 @app.get("/")
 async def root():
-    return {"message": "Recipe Finder API is running"}
+    return {"message": f"{settings.app_name} is running"}
 
 
 @app.get("/health")
