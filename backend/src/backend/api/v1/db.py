@@ -167,4 +167,175 @@ RECIPES = [
         "is_vegetarian": True,
         "rating": 4.8
     },
+{
+        "id": 10,
+        "title": "Лосось с овощами гриль",
+        "slug": "grilled-salmon-veg",
+        "cuisine": "norwegian",
+        "difficulty": "medium",
+        "cooking_time": 25,
+        "servings": 1,
+        "calories_per_serving": 410,
+        "ingredients": [
+            {"name": "лосось", "amount": 150},
+            {"name": "цукини", "amount": 80},
+            {"name": "болгарский перец", "amount": 70},
+            {"name": "лимон", "amount": 10},
+            {"name": "оливковое масло", "amount": 10}
+        ],
+        "is_vegetarian": False,
+        "rating": 4.9
+    },
+    {
+        "id": 11,
+        "title": "Хумус с овощами",
+        "slug": "classic-hummus",
+        "cuisine": "middle-eastern",
+        "difficulty": "easy",
+        "cooking_time": 15,
+        "servings": 1,
+        "calories_per_serving": 250,
+        "ingredients": [
+            {"name": "нут", "amount": 100},
+            {"name": "тахини", "amount": 20},
+            {"name": "лимонный сок", "amount": 10},
+            {"name": "оливковое масло", "amount": 15},
+            {"name": "морковь (палочки)", "amount": 50}
+        ],
+        "is_vegetarian": True,
+        "rating": 4.6
+    },
+    {
+        "id": 12,
+        "title": "Курица карри",
+        "slug": "chicken-curry",
+        "cuisine": "indian",
+        "difficulty": "medium",
+        "cooking_time": 40,
+        "servings": 1,
+        "calories_per_serving": 460,
+        "ingredients": [
+            {"name": "куриное филе", "amount": 150},
+            {"name": "кокосовое молоко", "amount": 80},
+            {"name": "карри паста", "amount": 15},
+            {"name": "рис басмати", "amount": 60},
+            {"name": "кинза", "amount": 5}
+        ],
+        "is_vegetarian": False,
+        "rating": 4.7
+    },
+{
+        "id": 13,
+        "title": "Фалафель в пите",
+        "slug": "falafel-pita",
+        "cuisine": "middle-eastern",
+        "difficulty": "medium",
+        "cooking_time": 35,
+        "servings": 1,
+        "calories_per_serving": 420,
+        "ingredients": [
+            {"name": "фалафель", "amount": 80},
+            {"name": "пита", "amount": 60},
+            {"name": "свежий огурец", "amount": 40},
+            {"name": "соус тахини", "amount": 20},
+            {"name": "помидоры", "amount": 40}
+        ],
+        "is_vegetarian": True,
+        "rating": 4.5
+    },
+    {
+        "id": 14,
+        "title": "Стейк из цветной капусты",
+        "slug": "cauliflower-steak",
+        "cuisine": "modern",
+        "difficulty": "easy",
+        "cooking_time": 25,
+        "servings": 1,
+        "calories_per_serving": 150,
+        "ingredients": [
+            {"name": "цветная капуста", "amount": 200},
+            {"name": "оливковое масло", "amount": 15},
+            {"name": "чеснок", "amount": 5},
+            {"name": "паприка", "amount": 2},
+            {"name": "зелень", "amount": 5}
+        ],
+        "is_vegetarian": True,
+        "rating": 4.3
+    },
+    {
+        "id": 15,
+        "title": "Удон с говядиной",
+        "slug": "beef-udon",
+        "cuisine": "japanese",
+        "difficulty": "medium",
+        "cooking_time": 30,
+        "servings": 1,
+        "calories_per_serving": 580,
+        "ingredients": [
+            {"name": "лапша удон", "amount": 100},
+            {"name": "говяжья вырезка", "amount": 120},
+            {"name": "соевый соус", "amount": 20},
+            {"name": "морковь", "amount": 30},
+            {"name": "кунжут", "amount": 5}
+        ],
+        "is_vegetarian": False,
+        "rating": 4.8
+    },
+    {
+        "id": 16,
+        "title": "Паэлья с морепродуктами",
+        "slug": "seafood-paella",
+        "cuisine": "spanish",
+        "difficulty": "hard",
+        "cooking_time": 50,
+        "servings": 2,
+        "calories_per_serving": 620,
+        "ingredients": [
+            {"name": "рис арборио", "amount": 150},
+            {"name": "креветки", "amount": 100},
+            {"name": "мидии", "amount": 100},
+            {"name": "шафран", "amount": 1},
+            {"name": "горошек", "amount": 30}
+        ],
+        "is_vegetarian": False,
+        "rating": 4.9
+    },
+    {
+        "id": 17,
+        "title": "Гаспачо",
+        "slug": "gazpacho",
+        "cuisine": "spanish",
+        "difficulty": "easy",
+        "cooking_time": 15,
+        "servings": 1,
+        "calories_per_serving": 120,
+        "ingredients": [
+            {"name": "помидоры", "amount": 300},
+            {"name": "болгарский перец", "amount": 50},
+            {"name": "огурцы", "amount": 50},
+            {"name": "чеснок", "amount": 3},
+            {"name": "оливковое масло", "amount": 10}
+        ],
+        "is_vegetarian": True,
+        "rating": 4.4
+    },
+    {
+        "id": 18,
+        "title": "Бургер с нутовой котлетой",
+        "slug": "chickpea-burger",
+        "cuisine": "american",
+        "difficulty": "medium",
+        "cooking_time": 35,
+        "servings": 1,
+        "calories_per_serving": 450,
+        "ingredients": [
+            {"name": "булочка для бургера", "amount": 60},
+            {"name": "нутовая котлета", "amount": 100},
+            {"name": "салат айсберг", "amount": 20},
+            {"name": "соус карри", "amount": 15},
+            {"name": "маринованный огурец", "amount": 20}
+        ],
+        "is_vegetarian": True,
+        "rating": 4.2
+    }
 ]
