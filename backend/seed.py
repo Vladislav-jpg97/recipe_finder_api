@@ -1,9 +1,7 @@
 import asyncio
-import json
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from sqlalchemy.orm import Session
 
 from backend.models import Recipe
 from src.backend.api.v1.db import RECIPES
@@ -11,6 +9,7 @@ from src.backend.api.v1.db import RECIPES
 from backend.core.config import settings_seed
 
 DATABASE_URL = settings_seed.database_url
+
 
 async def seed_db():
     engine = create_async_engine(DATABASE_URL, echo=True)
@@ -47,6 +46,7 @@ async def seed_db():
 
         # Закрываем соединение
     await engine.dispose()
+
+
 if __name__ == "__main__":
     asyncio.run(seed_db())
-
