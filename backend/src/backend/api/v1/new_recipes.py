@@ -13,14 +13,8 @@ router = APIRouter(
 )
 
 
-@router.get(
-    "/",
-    status_code=status.HTTP_200_OK,
-    summary="Список рецептов"
-)
-async def get_all_recipes(
-        session: AsyncSession = Depends(get_db)
-):
+@router.get("/", status_code=status.HTTP_200_OK, summary="Список рецептов")
+async def get_all_recipes(session: AsyncSession = Depends(get_db)):
     repo = RecipeRepository(session)
     service = RecipeService(repo, session)
     return await service.get_all()

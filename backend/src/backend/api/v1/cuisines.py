@@ -4,7 +4,7 @@ from starlette import status
 
 from backend.core.database import get_db
 from backend.repository.cuisine_repo import CuisineRepository
-from backend.schemas.cuisines import CuisineRead
+from backend.schemas.cuisines import  CuisineCreate
 from backend.services.cuisine_service import CuisineService
 
 router = APIRouter(prefix="/cuisines", tags=["Cuisine"])
@@ -43,7 +43,7 @@ async def get_cuisine(
     summary="Создать кухню"
 )
 async def create_cuisine(
-        data: CuisineRead,
+        data: CuisineCreate,
         session: AsyncSession = Depends(get_db)
 ):
     repo = CuisineRepository(session)

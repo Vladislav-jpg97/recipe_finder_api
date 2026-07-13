@@ -14,8 +14,8 @@ class CuisineRepository:
         cuisines = result.scalars().all()
         return cuisines
 
-    async def get_by_id(self, id: int) -> Cuisine:
-        stmt = select(Cuisine).where(Cuisine.id == id)
+    async def get_by_id(self, cuisine_id: int) -> Cuisine:
+        stmt = select(Cuisine).where(Cuisine.id == cuisine_id)
         result = await self.session.execute(stmt)
         cuisine = result.scalar_one_or_none()
         return cuisine

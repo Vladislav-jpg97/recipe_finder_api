@@ -3,7 +3,7 @@ import json
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models import Recipe
+from backend.models import Recipe, Cuisine
 from backend.repository.recipe_repo import RecipeRepository
 from backend.schemas.recipes import RecipeCreate, RecipeUpdate
 from backend.utils.slug import SlugGenerate
@@ -35,27 +35,29 @@ class RecipeService:
         slug = base_slug
         counter = 1
 
-        if recipe.slug == slug:
-            raise HTTPException(status_code=400, detail="Recipe already exists")
-
         while await self.repo.get_by_slug(slug):
-            slug = SlugGenerate.add_suffix(slug, counter)
+            slug = SlugGenerate.add_suffix(base_slug, counter)
             counter += 1
-        get_ingredients = await self.repo.get_by_slug(slug)
+        cuisine_exists = await self.session.get(Cuisine, recipe.cuisine_id)
+        if not cuisine_exists:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Кухня с ID {recipe.cuisine_id} не найдена"
+            )
 
-        ingredients_json = json.dumps([i  for i in get_ingredients.ingredients])
+        ingredients_data = [ing.model_dump() for ing in recipe.ingredients]
 
         new_recipe = Recipe(
             title=recipe.title,
             slug=slug,
-            cuisine=recipe.cuisine,
+            cuisine_id=recipe.cuisine_id,
             difficulty=recipe.difficulty,
             cooking_time=recipe.cooking_time,
             is_vegetarian=recipe.is_vegetarian,
             rating=recipe.rating,
             servings=recipe.servings,
             calories_per_serving=recipe.calories_per_serving,
-            ingredients=ingredients_json,
+            ingredients=ingredients_data,
         )
 
         await self.repo.add(new_recipe)

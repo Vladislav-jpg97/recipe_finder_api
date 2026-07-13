@@ -36,39 +36,24 @@ class RecipeStats(BaseModel):
     slowest_recipe: str
 
 
-class RecipeCreate(RecipeDetail):
-    pass
+class RecipeCreate(BaseModel):
+    title: str = Field(min_length=3, max_length=200)
+    slug: str = Field(min_length=3, max_length=200)
+    cuisine_id: int
+    difficulty: Literal["easy", "medium", "hard"]
+    cooking_time: int = Field(ge=1, le=600)
+    servings: int = Field(ge=1, le=50)
+    calories_per_serving: int = Field(ge=0)
+    ingredients: list[RecipeIngredient]
+    is_vegetarian: bool = False
+    rating: float = Field(ge=0, le=5, default=0)
 
     @field_validator('slug', mode="before")
     @classmethod
     def validate_slug(cls, v):
-        if v is None:
-            return v
-        if not isinstance(v, str):
-            raise ValueError("slug - Должен быть строкой")
-        return v.lower().strip().replace(' ', '-')
-
-    @field_validator('ingredients', mode="before")
-    @classmethod
-    def validate_ingredients(cls, v):
-        if v is None:
-            return v
-
-        if not isinstance(v, list):
-            raise ValueError("Ингредиенты должны быть списком")
-        cleaned_ingredients = []
-        for ing in v:
-            if not isinstance(ing, str):
-                raise ValueError("Каждый ингредиент должен быть строкой")
-
-            stripped = ing.strip()
-
-            if len(stripped) < 2:
-                raise ValueError(f"Ингредиент '{ing}' слишком короткий (минимум 2 символа)")
-
-            cleaned_ingredients.append(stripped)
-
-        return cleaned_ingredients
+        if isinstance(v, str):
+            return v.lower().strip().replace(' ', '-')
+        return v
 
 
 class RecipeUpdate(BaseModel):
