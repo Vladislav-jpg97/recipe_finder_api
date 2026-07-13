@@ -8,7 +8,7 @@ class RecipeRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_all(self):
+    async def get_all(self) -> list[Recipe]:
         stmt = select(Recipe).order_by(Recipe.title)
         result = await self.session.execute(stmt)
         recipe = result.scalars().all()
@@ -26,12 +26,12 @@ class RecipeRepository:
         recipe = result.scalars().one_or_none()
         return recipe
 
-    async def add(self, recipe: Recipe):
+    async def add(self, recipe: Recipe) -> Recipe:
         self.session.add(recipe)
         await self.session.flush()
         await self.session.refresh(recipe)
         return recipe
 
-    async def delete(self, recipe: Recipe):
+    async def delete(self, recipe: Recipe) -> None:
         await self.session.delete(recipe)
         await self.session.flush()
