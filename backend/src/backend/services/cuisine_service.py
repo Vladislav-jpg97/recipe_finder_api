@@ -47,7 +47,7 @@ class CuisineService:
         await self.repo.add(new_cuisine)
         await self.session.commit()
         await self.session.refresh(new_cuisine)
-        return cuisine
+        return new_cuisine
 
     async def delete(self, cuisine_id) -> None:
         cuisine = await self.repo.get_by_id(cuisine_id)
