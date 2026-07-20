@@ -1,8 +1,9 @@
 from datetime import datetime
 from sqlalchemy import JSON, func, String, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.models.base import Base
+from backend.models.ingredient import recipe_ingredients
 from backend.models.mixins import SlugMixin
 
 
@@ -15,10 +16,15 @@ class Recipe(SlugMixin,Base):
     cooking_time: Mapped[int]
     servings: Mapped[int]
     calories_per_serving: Mapped[int]
-    ingredients: Mapped[dict] = mapped_column(JSON, default=dict)
     is_vegetarian: Mapped[bool] = mapped_column(default=False)
     rating: Mapped[float] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     cuisine_id: Mapped[int] = mapped_column(ForeignKey("cuisines.id", ondelete="SET NULL"))
+
+    ingredients = relationship(
+        "Ingredient",
+        secondary=recipe_ingredients,
+        back_populates="recipes",
+    )
 
