@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from src.backend.api.v1.cuisines import router as cuisines_router
-from src.backend.api.v1.new_recipes import router as new_recipes_router
-from src.backend.core.config import settings
+from backend.api.v1.cuisines import router as cuisines_router
+from backend.api.v1.new_recipes import router as new_recipes_router
+from backend.core.config import settings
 # Создали объект приложения FASTapi
 app = FastAPI(
     title=f"{settings.app_name}",

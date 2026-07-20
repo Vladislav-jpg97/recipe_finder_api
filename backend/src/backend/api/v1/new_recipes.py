@@ -1,11 +1,7 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter
 from starlette import status
-
-from backend.core.database import get_db
-from backend.repository.recipe_repo import RecipeRepository
+from backend.dependencies.recipe import RecipeServiceDep
 from backend.schemas.recipes import RecipeCreate, RecipeUpdate
-from backend.services.recipe_service import RecipeService
 
 router = APIRouter(
     prefix="/recipes",
@@ -14,9 +10,7 @@ router = APIRouter(
 
 
 @router.get("/", status_code=status.HTTP_200_OK, summary="Список рецептов")
-async def get_all_recipes(session: AsyncSession = Depends(get_db)):
-    repo = RecipeRepository(session)
-    service = RecipeService(repo, session)
+async def get_all_recipes(service: RecipeServiceDep):
     return await service.get_all()
 
 
@@ -27,10 +21,8 @@ async def get_all_recipes(session: AsyncSession = Depends(get_db)):
 )
 async def get_recipe(
         recipe_id: int,
-        session: AsyncSession = Depends(get_db)
+        service: RecipeServiceDep
 ):
-    repo = RecipeRepository(session)
-    service = RecipeService(repo, session)
     return await service.get_or_404(recipe_id)
 
 
@@ -41,10 +33,8 @@ async def get_recipe(
 )
 async def create_recipe(
         recipe_in: RecipeCreate,
-        session: AsyncSession = Depends(get_db)
+        service: RecipeServiceDep
 ):
-    repo = RecipeRepository(session)
-    service = RecipeService(repo, session)
     return await service.create(recipe_in)
 
 
@@ -56,10 +46,8 @@ async def create_recipe(
 async def update_recipe(
         recipe_id: int,
         body: RecipeUpdate,
-        session: AsyncSession = Depends(get_db)
+        service: RecipeServiceDep
 ):
-    repo = RecipeRepository(session)
-    service = RecipeService(repo, session)
     return await service.update(recipe_id, body)
 
 
@@ -70,8 +58,6 @@ async def update_recipe(
 )
 async def delete_recipe(
         recipe_id: int,
-        session: AsyncSession = Depends(get_db)
+        service: RecipeServiceDep
 ):
-    repo = RecipeRepository(session)
-    service = RecipeService(repo, session)
     return await service.delete(recipe_id)

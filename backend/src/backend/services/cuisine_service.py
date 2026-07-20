@@ -11,10 +11,11 @@ class CuisineService:
 
     def __init__(
             self,
-            repo: CuisineRepository,
             session: AsyncSession,
+            cuisine_repo: CuisineRepository,
+
     ):
-        self.repo = repo
+        self.repo = cuisine_repo
         self.session = session
 
     async def get_all(self) -> list[Cuisine]:

@@ -13,10 +13,11 @@ class RecipeService:
 
     def __init__(
             self,
-            repo: RecipeRepository,
-            session: AsyncSession
+            session: AsyncSession,
+            recipe_repo: RecipeRepository,
+
     ):
-        self.repo = repo
+        self.repo = recipe_repo
         self.session = session
 
     async def get_all(self) -> list[Recipe]:

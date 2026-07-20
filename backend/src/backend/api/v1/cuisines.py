@@ -1,11 +1,7 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter
 from starlette import status
-
-from backend.core.database import get_db
-from backend.repository.cuisine_repo import CuisineRepository
-from backend.schemas.cuisines import  CuisineCreate
-from backend.services.cuisine_service import CuisineService
+from backend.dependencies.cuisines import CuisineServiceDep
+from backend.schemas.cuisines import CuisineCreate
 
 router = APIRouter(prefix="/cuisines", tags=["Cuisine"])
 
@@ -16,10 +12,8 @@ router = APIRouter(prefix="/cuisines", tags=["Cuisine"])
     summary="Список всех кухонь"
 )
 async def get_all_cuisines(
-        session: AsyncSession = Depends(get_db)
+        service: CuisineServiceDep,
 ):
-    repo = CuisineRepository(session)
-    service = CuisineService(repo, session)
     return await service.get_all()
 
 
@@ -30,10 +24,8 @@ async def get_all_cuisines(
 )
 async def get_cuisine(
         cuisine_id: int,
-        session: AsyncSession = Depends(get_db)
+        service: CuisineServiceDep
 ):
-    repo = CuisineRepository(session)
-    service = CuisineService(repo, session)
     return await service.get_or_404(cuisine_id)
 
 
@@ -44,10 +36,8 @@ async def get_cuisine(
 )
 async def create_cuisine(
         data: CuisineCreate,
-        session: AsyncSession = Depends(get_db)
+        service: CuisineServiceDep
 ):
-    repo = CuisineRepository(session)
-    service = CuisineService(repo, session)
     return await service.create(data.name, data.country_code)
 
 
@@ -58,9 +48,7 @@ async def create_cuisine(
 )
 async def delete_cuisine(
         cuisine_id: int,
-        session: AsyncSession = Depends(get_db)
+        service: CuisineServiceDep
 ):
-    repo = CuisineRepository(session)
-    service = CuisineService(repo, session)
     await service.delete(cuisine_id)
     return None
