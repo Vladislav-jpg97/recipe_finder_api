@@ -4,6 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.models import Recipe, Cuisine
+from backend.repository.ingredient_repo import IngredientRepository
 from backend.repository.recipe_repo import RecipeRepository
 from backend.schemas.recipes import RecipeCreate, RecipeUpdate
 from backend.utils.slug import SlugGenerate
@@ -15,8 +16,10 @@ class RecipeService:
             self,
             session: AsyncSession,
             recipe_repo: RecipeRepository,
+            ingredient_repo: IngredientRepository
 
     ):
+        self.ingredient_repo = ingredient_repo
         self.repo = recipe_repo
         self.session = session
 
@@ -30,8 +33,7 @@ class RecipeService:
             raise HTTPException(status_code=404, detail="Recipe not found")
         return recipe
 
-
-    async def create(self, recipe: RecipeCreate) -> Recipe:
+    async def create(self, recipe: RecipeCreate, ingredient_ids: list[int] | None = None) -> Recipe:
         base_slug = SlugGenerate.generate(recipe.title)
         slug = base_slug
         counter = 1
@@ -39,6 +41,7 @@ class RecipeService:
         while await self.repo.get_by_slug(slug):
             slug = SlugGenerate.add_suffix(base_slug, counter)
             counter += 1
+
         cuisine_exists = await self.session.get(Cuisine, recipe.cuisine_id)
         if not cuisine_exists:
             raise HTTPException(
@@ -46,7 +49,9 @@ class RecipeService:
                 detail=f"Кухня с ID {recipe.cuisine_id} не найдена"
             )
 
-        ingredients_data = [ing.model_dump() for ing in recipe.ingredients]
+        ingredients = []
+        if ingredient_ids:
+            ingredients = await self.ingredient_repo.get_by_ids(ingredient_ids)
 
         new_recipe = Recipe(
             title=recipe.title,
@@ -58,7 +63,7 @@ class RecipeService:
             rating=recipe.rating,
             servings=recipe.servings,
             calories_per_serving=recipe.calories_per_serving,
-            ingredients=ingredients_data,
+            ingredients=ingredients,
         )
 
         await self.repo.add(new_recipe)
@@ -66,16 +71,23 @@ class RecipeService:
         await self.session.refresh(new_recipe)
         return new_recipe
 
-    async def update(self,recipe_id: int,recipe_update: RecipeUpdate) -> Recipe:
+    async def update(self, recipe_id: int, recipe_update: RecipeUpdate,
+                     ingredient_ids: list[int] | None = None) -> Recipe:
         recipe = await self.repo.get_by_id(recipe_id)
         if not recipe:
             raise HTTPException(status_code=404, detail="Recipe not found")
+
+        if ingredient_ids is not None:
+            ingredients = await self.ingredient_repo.get_by_ids(ingredient_ids)
+            recipe.ingredients = ingredients
+
         update_data = recipe_update.model_dump(exclude_unset=True)
 
         if "title" in update_data:
             new_title = update_data["title"]
             update_data["slug"] = SlugGenerate.generate(new_title)
-        for k,v in update_data.items():
+
+        for k, v in update_data.items():
             setattr(recipe, k, v)
 
         await self.session.commit()
