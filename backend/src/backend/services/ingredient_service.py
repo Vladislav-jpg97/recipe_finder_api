@@ -12,6 +12,9 @@ class IngredientService:
         self.session = session
         self.ingredient_repo = ingredient_repo
 
+    async def get_all(self) -> list[Ingredient]:
+        return await self.ingredient_repo.get_all()
+
     async def create(self,name:str):
         base_slug = SlugGenerate.generate(name)
         slug = base_slug

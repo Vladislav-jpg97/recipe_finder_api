@@ -25,7 +25,7 @@ class IngredientRepository:
     async def get_by_slug(self, ingredient_slug: str) -> Ingredient:
         stmt = select(Ingredient).where(Ingredient.slug == ingredient_slug)
         result = await self.session.execute(stmt)
-        recipe = result.scalars().one()
+        recipe = result.scalars().one_or_none()
         return recipe
 
     async def get_by_ids(self, ingredient_ids: list[int]) -> list[Ingredient]:

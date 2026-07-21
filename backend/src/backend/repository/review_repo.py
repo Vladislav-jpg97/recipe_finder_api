@@ -8,8 +8,8 @@ class RecipeReviewRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_recipe(self):
-        stmt = select(RecipeReview).order_by(RecipeReview.created_at.desc())
+    async def get_by_recipe(self, recipe_id: int) -> RecipeReview:
+        stmt = select(RecipeReview).where(RecipeReview.recipe_id == recipe_id)
         result = await self.session.execute(stmt)
         recipe = result.scalars().all()
         return recipe

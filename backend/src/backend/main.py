@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from backend.api.v1.cuisines import router as cuisines_router
 from backend.api.v1.new_recipes import router as new_recipes_router
+from backend.api.v1.ingredients import router as ingredients_router
+from backend.api.v1.reviews import router as reviews_router
 from backend.core.config import settings
 # Создали объект приложения FASTapi
 app = FastAPI(
@@ -21,3 +23,5 @@ async def health_check():
 
 app.include_router(cuisines_router,prefix="/api/v1")
 app.include_router(new_recipes_router,prefix="/api/v1")
+app.include_router(ingredients_router,prefix="/api/v1")
+app.include_router(reviews_router,prefix="/api/v1")

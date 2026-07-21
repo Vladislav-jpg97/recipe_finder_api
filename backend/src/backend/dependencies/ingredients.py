@@ -27,5 +27,5 @@ async def get_ingredient_service(
 
 
 IngredientServiceDep = Annotated[
-    IngredientService, Depends(get_ingredient_repo)
+    IngredientService, Depends(get_ingredient_service)
 ]
