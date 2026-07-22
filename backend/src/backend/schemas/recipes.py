@@ -10,21 +10,30 @@ class RecipeIngredient(BaseModel):
 
 
 class RecipeBrief(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     title: str = Field(min_length=3, max_length=200)
     slug: str = Field(min_length=3, max_length=200)
-    cuisine: str = Field(min_length=2, max_length=50)
-    difficulty: str = Literal["easy", "medium", "hard"]
+    cuisine: str  # Можно оставить str, если добавить поле/свойство или валидатор
+    difficulty: Literal["easy", "medium", "hard"]
     cooking_time: int = Field(ge=1, le=600)
     is_vegetarian: bool = Field(default=False)
     rating: float = Field(ge=0, le=5, default=0)
 
+    @field_validator('cuisine', mode="before")
+    @classmethod
+    def extract_cuisine_name(cls, v):
+        # Если пришел объект модели Cuisine, берем его атрибут name
+        if hasattr(v, "name"):
+            return v.name
+        return v
+
 
 class RecipeDetail(RecipeBrief):
-    model_config = ConfigDict(from_attributes=True)
     servings: int = Field(ge=1, le=50)
     calories_per_serving: int = Field(ge=0)
-    ingredients: list[RecipeIngredient] = Field(min_length=1, max_length=30)
+    ingredients: list[RecipeIngredient] = Field(default_factory=list)
 
 
 class RecipeStats(BaseModel):

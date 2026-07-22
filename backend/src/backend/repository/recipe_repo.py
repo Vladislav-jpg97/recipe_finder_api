@@ -7,7 +7,7 @@ from backend.models import Recipe
 from sqlalchemy import select, func
 
 from backend.schemas.pagination import PaginationParams, Page
-from backend.schemas.recipes import RecipeFilters
+from backend.schemas.recipes import RecipeFilters, RecipeDetail
 
 
 class RecipeRepository:
@@ -85,3 +85,17 @@ class RecipeRepository:
             items=recipe,
             params=pagination
         )
+
+    async def get_top_rated(self, limit: int) -> list[RecipeDetail]:
+        stmt = (
+            select(Recipe)
+            .options(
+                selectinload(Recipe.cuisine),
+                selectinload(Recipe.ingredients)
+            )
+            .where(Recipe.rating > 0)
+            .order_by(Recipe.rating.desc())
+            .limit(limit)
+        )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())

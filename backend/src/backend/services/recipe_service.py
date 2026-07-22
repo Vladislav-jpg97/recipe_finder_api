@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.models import Recipe, Cuisine
 from backend.repository.ingredient_repo import IngredientRepository
 from backend.repository.recipe_repo import RecipeRepository
-from backend.schemas.pagination import PaginationParams
-from backend.schemas.recipes import RecipeCreate, RecipeUpdate, RecipeFilters
+from backend.schemas.pagination import PaginationParams, Page
+from backend.schemas.recipes import RecipeCreate, RecipeUpdate, RecipeFilters, RecipeDetail
 from backend.utils.slug import SlugGenerate
 
 
@@ -106,5 +106,12 @@ class RecipeService:
             self,
             pagination: PaginationParams,
             filters: RecipeFilters
-    ):
+    ) -> Page[RecipeDetail]:
         return await self.repo.get_paginated(pagination, filters)
+
+    async def get_top_rated(
+            self,
+            limit: int
+    ) -> list[RecipeDetail]:
+        recipes = await self.repo.get_top_rated(limit)
+        return [RecipeDetail.model_validate(recipe) for recipe in recipes]
