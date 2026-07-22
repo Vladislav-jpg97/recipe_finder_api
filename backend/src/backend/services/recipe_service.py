@@ -6,7 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.models import Recipe, Cuisine
 from backend.repository.ingredient_repo import IngredientRepository
 from backend.repository.recipe_repo import RecipeRepository
-from backend.schemas.recipes import RecipeCreate, RecipeUpdate
+from backend.schemas.pagination import PaginationParams
+from backend.schemas.recipes import RecipeCreate, RecipeUpdate, RecipeFilters
 from backend.utils.slug import SlugGenerate
 
 
@@ -27,7 +28,7 @@ class RecipeService:
         recipe = await self.repo.get_all()
         return recipe
 
-    async def get_or_404(self,recipe_id: int) -> Recipe:
+    async def get_or_404(self, recipe_id: int) -> Recipe:
         recipe = await self.repo.get_by_id(recipe_id)
         if not recipe:
             raise HTTPException(status_code=404, detail="Recipe not found")
@@ -94,10 +95,16 @@ class RecipeService:
         await self.session.refresh(recipe)
         return recipe
 
-
-    async def delete(self,recipe_id: int) -> None:
+    async def delete(self, recipe_id: int) -> None:
         recipe = await self.repo.get_by_id(recipe_id)
         if not recipe:
             raise HTTPException(status_code=404, detail="Recipe not found")
         await self.session.delete(recipe)
         await self.session.commit()
+
+    async def get_paginated(
+            self,
+            pagination: PaginationParams,
+            filters: RecipeFilters
+    ):
+        return await self.repo.get_paginated(pagination, filters)
