@@ -27,4 +27,5 @@ class Recipe(SlugMixin,Base):
         secondary=recipe_ingredients,
         back_populates="recipes",
     )
+    cuisine = relationship("Cuisine", back_populates="recipes")
 
