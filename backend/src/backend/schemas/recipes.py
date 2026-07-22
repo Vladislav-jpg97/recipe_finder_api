@@ -1,5 +1,6 @@
 from typing import Literal
 
+from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
@@ -62,3 +63,29 @@ class RecipeUpdate(BaseModel):
     is_vegetarian: bool | None = Field(default=False)
     rating: float | None = Field(ge=0, le=5, default=0)
     servings: int | None = Field(ge=1, le=50)
+
+class RecipeFilters:
+    def __init__(
+            self,
+            search : str | None = None,
+            cuisine_id :int | None = None,
+            is_vegetarian : bool | None = None,
+            difficulty : str | None = None,
+            max_cooking_time : int | None = None,
+            sort_by : str = Query(
+                "created_at" ,
+                enum=["created_at", "rating", "cooking_time"]
+            ),
+            sort_order : str = Query(
+                "desc",
+                enum=["desc","asc"]
+            ),
+    ):
+        self.search = search
+        self.cuisine_id = cuisine_id
+        self.is_vegetarian = is_vegetarian
+        self.difficulty = difficulty
+        self.max_cooking_time = max_cooking_time
+        self.sort_by = sort_by
+        self.sort_order = sort_order
+
