@@ -50,14 +50,14 @@ def decode_token(token: str, expected_type: str = "access") -> int:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
+            headers={"WWW-Authenticate": "argon2"},
         )
 
     if payload.get("type") != expected_type:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token type",
-            headers={"WWW-Authenticate": "Bearer"},
+            headers={"WWW-Authenticate": "argon2"},
         )
 
     return int(payload["sub"])
