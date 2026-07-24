@@ -34,27 +34,7 @@ UserServiceDep = Annotated[
     Depends(get_user_service)
 ]
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
-async def get_current_user(
-        user_repo: UserRepoDep,
-        token: str = Depends(oauth2_scheme),
 
-):
-    user_id = decode_token(token, expected_type="access")
 
-    user = await user_repo.get_by_id(user_id)
-
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Inactive user"
-        )
-    return user

@@ -1,9 +1,13 @@
+from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.exceptions import HTTPException
 
-from backend.core.security import hash_password, verify_password, create_access_token, create_refresh_token
+from backend.core.security import hash_password, verify_password, create_access_token, create_refresh_token, \
+    decode_token
+from backend.dependencies.auth import UserRepoDep
 from backend.models import User
 from backend.repository.user_repo import UserRepository
 from backend.schemas.auth import TokenResponse
@@ -40,8 +44,7 @@ class UserService:
         await self.session.refresh(user)
         return user
 
-
-    async def authenticate(self,email: str, password: str):
+    async def authenticate(self, email: str, password: str):
         user = await self.user_repo.get_by_email(email)
 
         if not user or not verify_password(password, user.hashed_password):
@@ -59,5 +62,28 @@ class UserService:
         access_token = create_access_token(user.id)
         refresh_token = create_refresh_token(user.id)
 
-        return TokenResponse(access_token=access_token, refresh_token=refresh_token,token_type="argon2")
+        return TokenResponse(access_token=access_token, refresh_token=refresh_token, token_type="bearer")
 
+    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+    async def get_current_user(
+            self,
+            user_repo: UserRepoDep,
+            token: str = Depends(oauth2_scheme),
+    ) -> User:
+        user_id = decode_token(token, expected_type="access")
+
+        user = await user_repo.get_by_id(user_id)
+
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Inactive user"
+            )
+        return user
