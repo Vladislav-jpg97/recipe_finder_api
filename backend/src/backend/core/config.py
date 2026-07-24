@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     default_page_size: int | None = 10
     max_recipes: int = 1000
     database_url: str
+    secret_key: str
+    algorithm : str
+    access_token: str
+    refresh_token: str
 
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",
