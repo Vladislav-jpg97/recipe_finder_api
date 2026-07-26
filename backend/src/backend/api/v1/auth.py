@@ -1,11 +1,13 @@
-from fastapi import APIRouter
-from sqlalchemy.util import await_fallback
+from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from starlette import status
 
 from backend.dependencies.auth import UserServiceDep
+from backend.models import User
 from backend.repository.user_repo import UserRepository
-from backend.schemas.auth import TokenResponse, LoginRequest, RefreshRequest
+from backend.schemas.auth import TokenResponse, LoginRequest
 from backend.schemas.user import UserResponse, UserCreate
+from backend.services.user_service import UserService
 
 router = APIRouter(
     prefix="/auth",
@@ -33,10 +35,11 @@ async def register(
     summary="Вход"
 )
 async def login(
-        data: LoginRequest,
-        service: UserServiceDep
+        service: UserServiceDep,
+        form_data: OAuth2PasswordRequestForm = Depends(),
+
 ):
-    return await service.authenticate(data.email, data.password)
+    return await service.authenticate(form_data.username, form_data.password)
 
 
 @router.post(
@@ -56,11 +59,9 @@ async def refresh_tokens(
     "/me",
     response_model=UserResponse,
     status_code=status.HTTP_200_OK,
-    summary=""
+    summary="Профиль текущего пользователя"
 )
 async def me(
-        user_repo: UserRepository,
-        service: UserServiceDep,
-        token: str
+        current_user: User = Depends(UserService.get_current_user)
 ):
-    return await service.get_current_user(user_repo, token)
+    return current_user

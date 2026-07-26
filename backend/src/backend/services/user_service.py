@@ -1,6 +1,5 @@
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.exceptions import HTTPException
@@ -12,6 +11,9 @@ from backend.models import User
 from backend.repository.user_repo import UserRepository
 from backend.schemas.auth import TokenResponse
 from backend.schemas.user import UserCreate
+
+# Глобальная схема (теперь Swagger увидит правильный путь /api/v1/auth/login)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 class UserService:
@@ -37,7 +39,7 @@ class UserService:
         user = User(
             email=data.email,
             username=data.username,
-            password=hash_password(data.password),
+            hashed_password=hash_password(data.password),
         )
         await self.user_repo.create(user)
         await self.session.commit()
@@ -64,15 +66,12 @@ class UserService:
 
         return TokenResponse(access_token=access_token, refresh_token=refresh_token, token_type="bearer")
 
-    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
-
+    @staticmethod
     async def get_current_user(
-            self,
             user_repo: UserRepoDep,
             token: str = Depends(oauth2_scheme),
     ) -> User:
         user_id = decode_token(token, expected_type="access")
-
         user = await user_repo.get_by_id(user_id)
 
         if user is None:

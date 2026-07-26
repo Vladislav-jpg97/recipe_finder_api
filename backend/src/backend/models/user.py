@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from sqlalchemy import DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.models import Base
@@ -13,4 +14,4 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True)
     #чтобы время вычислялось прямо в момент создания записи, а не при запуске приложения
-    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

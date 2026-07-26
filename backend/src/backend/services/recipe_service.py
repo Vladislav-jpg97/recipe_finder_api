@@ -2,6 +2,7 @@ import json
 
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette import status
 
 from backend.models import Recipe, Cuisine
 from backend.repository.ingredient_repo import IngredientRepository
@@ -34,7 +35,7 @@ class RecipeService:
             raise HTTPException(status_code=404, detail="Recipe not found")
         return recipe
 
-    async def create(self, recipe: RecipeCreate, ingredient_ids: list[int] | None = None) -> Recipe:
+    async def create(self, recipe: RecipeCreate, author_id: int, ingredient_ids: list[int] | None = None) -> Recipe:
         base_slug = SlugGenerate.generate(recipe.title)
         slug = base_slug
         counter = 1
@@ -64,6 +65,7 @@ class RecipeService:
             rating=recipe.rating,
             servings=recipe.servings,
             calories_per_serving=recipe.calories_per_serving,
+            author_id=author_id,  # <-- Записываем ID автора
             ingredients=ingredients,
         )
 
@@ -72,11 +74,22 @@ class RecipeService:
         await self.session.refresh(new_recipe)
         return new_recipe
 
-    async def update(self, recipe_id: int, recipe_update: RecipeUpdate,
-                     ingredient_ids: list[int] | None = None) -> Recipe:
+    async def update(
+            self,
+            recipe_id: int,
+            recipe_update: RecipeUpdate,
+            user_id: int,
+            ingredient_ids: list[int] | None = None
+    ) -> Recipe:
         recipe = await self.repo.get_by_id(recipe_id)
         if not recipe:
             raise HTTPException(status_code=404, detail="Recipe not found")
+
+        if recipe.author_id != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions"
+            )
 
         if ingredient_ids is not None:
             ingredients = await self.ingredient_repo.get_by_ids(ingredient_ids)
@@ -95,10 +108,12 @@ class RecipeService:
         await self.session.refresh(recipe)
         return recipe
 
-    async def delete(self, recipe_id: int) -> None:
+    async def delete(self, recipe_id: int,user_id: int,) -> None:
         recipe = await self.repo.get_by_id(recipe_id)
         if not recipe:
             raise HTTPException(status_code=404, detail="Recipe not found")
+        if recipe.author_id != user_id.id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
         await self.session.delete(recipe)
         await self.session.commit()
 
