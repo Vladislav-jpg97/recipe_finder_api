@@ -4,6 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
+from backend.core.cache import CacheService
 from backend.models import Recipe, Cuisine
 from backend.repository.ingredient_repo import IngredientRepository
 from backend.repository.recipe_repo import RecipeRepository
@@ -18,12 +19,14 @@ class RecipeService:
             self,
             session: AsyncSession,
             recipe_repo: RecipeRepository,
-            ingredient_repo: IngredientRepository
+            ingredient_repo: IngredientRepository,
+            cache_service : CacheService,
 
     ):
         self.ingredient_repo = ingredient_repo
         self.repo = recipe_repo
         self.session = session
+        self.cache_service = cache_service
 
     async def get_all(self) -> list[Recipe]:
         recipe = await self.repo.get_all()
