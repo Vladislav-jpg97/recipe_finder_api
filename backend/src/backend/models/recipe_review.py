@@ -4,7 +4,7 @@ from sqlalchemy import ForeignKey, String, TEXT, func, Integer, CheckConstraint
 from sqlalchemy.orm import Mapped
 from sqlalchemy.testing.schema import mapped_column
 
-from backend.models import Base
+from backend.models.base import Base
 
 
 class RecipeReview(Base):

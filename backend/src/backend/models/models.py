@@ -21,7 +21,7 @@ class Recipe(SlugMixin,Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     cuisine_id: Mapped[int] = mapped_column(ForeignKey("cuisines.id", ondelete="SET NULL"))
-    author_id : Mapped[int] = mapped_column(ForeignKey("authors.id"),nullable=False)
+    author_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
     ingredients = relationship(
         "Ingredient",

@@ -1,7 +1,7 @@
 from sqlalchemy import String, Integer, ForeignKey, Table, Column
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.models import Base
+from backend.models.base import Base
 from backend.models.mixins import SlugMixin
 
 recipe_ingredients = Table(
