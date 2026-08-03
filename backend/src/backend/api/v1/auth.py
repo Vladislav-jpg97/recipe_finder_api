@@ -1,11 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
-from starlette import status
 
 from backend.dependencies.auth import UserServiceDep
 from backend.models import User
-from backend.repository.user_repo import UserRepository
-from backend.schemas.auth import TokenResponse, LoginRequest
+from backend.schemas.auth import TokenResponse, RefreshRequest
 from backend.schemas.user import UserResponse, UserCreate
 from backend.services.user_service import UserService
 
@@ -37,7 +35,6 @@ async def register(
 async def login(
         service: UserServiceDep,
         form_data: OAuth2PasswordRequestForm = Depends(),
-
 ):
     return await service.authenticate(form_data.username, form_data.password)
 
@@ -49,10 +46,22 @@ async def login(
     summary="Обновление токенов"
 )
 async def refresh_tokens(
-        token: str,
+        body: RefreshRequest,
         service: UserServiceDep
 ):
-    return await service.refresh(token)
+    return await service.refresh_tokens(body.refresh_token)
+
+
+@router.post(
+    "/logout",
+    status_code=status.HTTP_200_OK,
+    summary="Выход из системы"
+)
+async def logout(
+        body: RefreshRequest,
+        service: UserServiceDep
+) -> dict:
+    return await service.logout(body.refresh_token)
 
 
 @router.get(
