@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from backend.core.cache import CacheService
+from backend.core.cache_keys import CacheKeys
 from backend.models import Recipe, Cuisine
 from backend.repository.ingredient_repo import IngredientRepository
 from backend.repository.recipe_repo import RecipeRepository
@@ -75,6 +76,7 @@ class RecipeService:
         await self.repo.add(new_recipe)
         await self.session.commit()
         await self.session.refresh(new_recipe)
+        await self.cache_service.delete_pattern("recipe:list:*")
         return new_recipe
 
     async def update(
@@ -109,6 +111,8 @@ class RecipeService:
 
         await self.session.commit()
         await self.session.refresh(recipe)
+        await self.cache_service.delete(CacheKeys.recipe_detail(recipe_id))
+        await self.cache_service.delete_pattern("recipe:list:*")
         return recipe
 
     async def delete(self, recipe_id: int,user_id: int,) -> None:
@@ -119,6 +123,8 @@ class RecipeService:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
         await self.session.delete(recipe)
         await self.session.commit()
+        await self.cache_service.delete(CacheKeys.recipe_detail(recipe_id))
+        await self.cache_service.delete_pattern("recipe:list:*")
 
     async def get_paginated(
             self,
