@@ -27,11 +27,15 @@ class RecipeRepository:
         cache_data = cache.get(cache_key)
         if cache_data:
             return json.loads(cache_data) if isinstance(cache_data, str) else cache_data
+
         stmt = select(Recipe).where(Recipe.id == recipe_id)
         result = await self.session.execute(stmt)
+
         response_schema = result.scalars().one_or_none()
+
         serialized_data = response_schema.model_dump(dump="json")
         cache.set(cache_key, serialized_data, ttl=600)
+
         return serialized_data
 
     async def get_by_slug(self, slug: str) -> Recipe | None:

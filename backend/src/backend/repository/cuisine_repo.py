@@ -1,7 +1,12 @@
+import json
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.core.cache import cache
+from backend.core.cache_keys import CacheKeys
 from backend.models import Cuisine
+from backend.schemas.cuisines import CuisineRead
 
 
 class CuisineRepository:
@@ -9,10 +14,21 @@ class CuisineRepository:
         self.session = session
 
     async def get_all(self) -> list[Cuisine]:
+        cache_key = CacheKeys.cuisine_list()
+        cache_data = cache.get(cache_key)
+        if cache_data:
+            return json.loads(cache_data) if isinstance(cache_data, str) else cache_data
+
         stmt = select(Cuisine).order_by(Cuisine.name)
         result = await self.session.execute(stmt)
         cuisines = result.scalars().all()
-        return cuisines
+        serialized_data = [
+            CuisineRead.model_validate(c).model_dump(mode="json")
+            for c in cuisines
+        ]
+        cache.set(cache_key, json.dumps(serialized_data), ttl=3600)
+
+        return serialized_data
 
     async def get_by_id(self, cuisine_id: int) -> Cuisine:
         stmt = select(Cuisine).where(Cuisine.id == cuisine_id)
