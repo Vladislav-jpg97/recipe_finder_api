@@ -1,8 +1,10 @@
+import json
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from backend.core.cache import cache
+from backend.core.cache_keys import CacheKeys
 from backend.models import Recipe
-
 
 from sqlalchemy import select, func
 
@@ -21,9 +23,16 @@ class RecipeRepository:
         return list(recipes)
 
     async def get_by_id(self, recipe_id: int) -> Recipe | None:
+        cache_key = CacheKeys.recipe_detail(recipe_id)
+        cache_data = cache.get(cache_key)
+        if cache_data:
+            return json.loads(cache_data) if isinstance(cache_data, str) else cache_data
         stmt = select(Recipe).where(Recipe.id == recipe_id)
         result = await self.session.execute(stmt)
-        return result.scalars().one_or_none()
+        response_schema = result.scalars().one_or_none()
+        serialized_data = response_schema.model_dump(dump="json")
+        cache.set(cache_key, serialized_data, ttl=600)
+        return serialized_data
 
     async def get_by_slug(self, slug: str) -> Recipe | None:
         stmt = select(Recipe).where(Recipe.slug == slug)
@@ -45,6 +54,19 @@ class RecipeRepository:
             pagination: PaginationParams,
             filters: RecipeFilters
     ):
+        filters_dict = filters.__dict__
+        pagination_dict = pagination.model_dump() if hasattr(pagination, "model_dump") else dict(pagination)
+
+        combined_params = {
+            **filters_dict,
+            **pagination_dict
+        }
+        cache_key = CacheKeys.recipe_list(**combined_params)
+
+        cache_data = cache.get(cache_key)
+        if cache_data:
+            return json.loads(cache_data) if isinstance(cache_data, str) else cache_data
+
         query = select(Recipe).options(
             selectinload(Recipe.cuisine),
             selectinload(Recipe.ingredients)
@@ -68,7 +90,7 @@ class RecipeRepository:
         count_query = select(func.count()).select_from(query.subquery())
         total = (await self.session.execute(count_query)).scalar_one()
 
-        sort_column = getattr(Recipe,filters.sort_by, Recipe.created_at)
+        sort_column = getattr(Recipe, filters.sort_by, Recipe.created_at)
         if filters.sort_order == "desc":
             sort_column = sort_column.desc()
         else:
@@ -80,11 +102,14 @@ class RecipeRepository:
 
         result = await self.session.execute(stmt)
         recipe = result.scalars().all()
-        return Page.create(
+        page_obj = Page.create(
             total=total,
             items=recipe,
             params=pagination
         )
+        serialized_data = page_obj.model_dump(mode="json")
+        cache.set(cache_key, json.dumps(serialized_data), ttl=300)
+        return serialized_data
 
     async def get_top_rated(self, limit: int) -> list[RecipeDetail]:
         stmt = (
