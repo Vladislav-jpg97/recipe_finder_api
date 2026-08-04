@@ -78,7 +78,7 @@ def upgrade() -> None:
     sa.Column('recipe_id', sa.Integer(), nullable=False),
     sa.Column('author_name', sa.String(length=100), nullable=False),
     sa.Column('rating', sa.Integer(), nullable=False),
-    sa.Column('content', sa.TEXT(), nullable=False, min_length=10),
+    sa.Column('content', sa.TEXT(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.ForeignKeyConstraint(['recipe_id'], ['recipes.id'], ondelete='CASCADE'),

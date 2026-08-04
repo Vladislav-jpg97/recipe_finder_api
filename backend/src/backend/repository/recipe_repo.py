@@ -22,19 +22,33 @@ class RecipeRepository:
         recipes = result.scalars().all()
         return list(recipes)
 
-    async def get_by_id(self, recipe_id: int) -> Recipe | None:
+    async def get_by_id(self, recipe_id: int) -> dict | Recipe | None:
         cache_key = CacheKeys.recipe_detail(recipe_id)
-        cache_data = cache.get(cache_key)
+
+        # 1. Добавили await для получения из кэша
+        cache_data = await cache.get(cache_key)
         if cache_data:
             return json.loads(cache_data) if isinstance(cache_data, str) else cache_data
 
-        stmt = select(Recipe).where(Recipe.id == recipe_id)
+        stmt = (
+            select(Recipe)
+            .options(
+                selectinload(Recipe.cuisine),
+                selectinload(Recipe.ingredients)
+            )
+            .where(Recipe.id == recipe_id)
+        )
         result = await self.session.execute(stmt)
+        recipe = result.scalars().one_or_none()
 
-        response_schema = result.scalars().one_or_none()
+        if not recipe:
+            return None
 
-        serialized_data = response_schema.model_dump(dump="json")
-        cache.set(cache_key, serialized_data, ttl=600)
+        # 2. Правильная сериализация SQLAlchemy модели через Pydantic-схему RecipeDetail
+        serialized_data = RecipeDetail.model_validate(recipe).model_dump(mode="json")
+
+        # 3. Добавили await для записи в кэш и json.dumps
+        await cache.set(cache_key, json.dumps(serialized_data), ttl=600)
 
         return serialized_data
 
@@ -67,7 +81,8 @@ class RecipeRepository:
         }
         cache_key = CacheKeys.recipe_list(**combined_params)
 
-        cache_data = cache.get(cache_key)
+        # 4. Добавили await для получения списка из кэша
+        cache_data = await cache.get(cache_key)
         if cache_data:
             return json.loads(cache_data) if isinstance(cache_data, str) else cache_data
 
@@ -112,7 +127,9 @@ class RecipeRepository:
             params=pagination
         )
         serialized_data = page_obj.model_dump(mode="json")
-        cache.set(cache_key, json.dumps(serialized_data), ttl=300)
+
+        # 5. Добавили await для сохранения списка в кэш
+        await cache.set(cache_key, json.dumps(serialized_data), ttl=300)
         return serialized_data
 
     async def get_top_rated(self, limit: int) -> list[RecipeDetail]:

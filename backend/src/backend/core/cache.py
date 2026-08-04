@@ -1,6 +1,7 @@
 import json
 from typing import Any, Annotated
 
+from redis import asyncio as aioredis
 from fastapi import Depends
 from redis.asyncio import Redis
 
@@ -24,7 +25,7 @@ class CacheService:
         self.client = client
 
     async def get(self, key: str) -> Any | None:
-        value = self.client.get(key)
+        value = await self.client.get(key)
         if value:
             return json.loads(value)
         return None
@@ -33,7 +34,7 @@ class CacheService:
             self,
             key: str, value: Any, ttl: int = 300
     ) -> None:
-        await self.clien.settex(key,ttl,json.dumps(value,default=str))
+        await self.client.setex(key,ttl,json.dumps(value,default=str))
 
     async def delete(self, key: str) -> None:
         await self.client.delete(key)
@@ -56,6 +57,7 @@ CacheServiceDep = Annotated[
     Depends(get_cache_service),
 ]
 
-cache = CacheService()
+redis_client = aioredis.from_url("redis://localhost:6379")
+cache = CacheService(client=redis_client)
 
 

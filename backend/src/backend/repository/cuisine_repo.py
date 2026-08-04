@@ -15,7 +15,7 @@ class CuisineRepository:
 
     async def get_all(self) -> list[Cuisine]:
         cache_key = CacheKeys.cuisine_list()
-        cache_data = cache.get(cache_key)
+        cache_data = await cache.get(cache_key)
         if cache_data:
             return json.loads(cache_data) if isinstance(cache_data, str) else cache_data
 
@@ -26,7 +26,7 @@ class CuisineRepository:
             CuisineRead.model_validate(c).model_dump(mode="json")
             for c in cuisines
         ]
-        cache.set(cache_key, json.dumps(serialized_data), ttl=3600)
+        await cache.set(cache_key, json.dumps(serialized_data), ttl=3600)
 
         return serialized_data
 
@@ -42,11 +42,11 @@ class CuisineRepository:
         cuisine = result.scalar_one_or_none()
         return cuisine
 
-    async def add(self, cuisine: Cuisine) -> Cuisine:
+    async def add(self, cuisine: Cuisine) -> dict:
         self.session.add(cuisine)
         await self.session.flush()
         await self.session.refresh(cuisine)
-        return cuisine
+        return CuisineRead.model_validate(cuisine).model_dump(mode="json")
 
     async def delete(self, cuisine: Cuisine) -> None:
         await self.session.delete(cuisine)

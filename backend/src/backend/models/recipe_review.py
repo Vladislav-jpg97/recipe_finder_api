@@ -13,5 +13,5 @@ class RecipeReview(Base):
     recipe_id : Mapped[int] = mapped_column(ForeignKey('recipes.id',ondelete='CASCADE'),)
     author_name : Mapped[str] = mapped_column(String(100))
     rating : Mapped[int] = mapped_column(Integer,CheckConstraint("rating >= 1 AND rating <= 5"),default=0)
-    content : Mapped[str] = mapped_column(TEXT , min_length=10)
+    content : Mapped[str] = mapped_column(TEXT )
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
