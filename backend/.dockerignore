@@ -1,0 +1,13 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+.git/
+tests/
+htmlcov/
+.coverage
+.pytest_cache/
+*.md
+migrations/versions/
