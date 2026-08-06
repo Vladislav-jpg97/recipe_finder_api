@@ -148,6 +148,8 @@ activemq-data/
 *.sage.py
 
 # Environments
+.env*
+.env.docker
 .env
 .envrc
 .venv
@@ -216,3 +218,4 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+.idea/
