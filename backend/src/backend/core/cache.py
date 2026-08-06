@@ -57,7 +57,7 @@ CacheServiceDep = Annotated[
     Depends(get_cache_service),
 ]
 
-redis_client = aioredis.from_url("redis://localhost:6379")
+redis_client = aioredis.from_url(settings.redis_url, encoding="utf-8", decode_responses=True)
 cache = CacheService(client=redis_client)
 
 

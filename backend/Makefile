@@ -1,9 +1,28 @@
-
 export:
 	poetry export -f requirements.txt --output requirements.txt --without-hashes
 
+up:
+	docker compose --env-file .env.docker up --build -d
+
+down:
+	docker compose --env-file .env.docker down
+
+reset:
+	docker compose --env-file .env.docker down -v
+
+logs:
+	docker compose --env-file .env.docker logs -f web
+
+migrate:
+	docker compose --env-file .env.docker run --rm migrate
+
+shell:
+	docker compose --env-file .env.docker exec web bash
+
+psql:
+	docker compose --env-file .env.docker exec postgres psql -U postgres -d recipe_finder
+
 build:
-	export
 	docker build -t recipe-api:latest .
 
 run:
@@ -12,13 +31,5 @@ run:
 stop:
 	docker stop recipe-app && docker rm recipe-app
 
-logs:
-	docker logs -f recipe-app
-
-shell:
-	docker exec -it recipe-app bash
 dev:
 	poetry run uvicorn backend.main:app --app-dir src --reload
-
-migrate:
-	poetry run alembic upgrade head

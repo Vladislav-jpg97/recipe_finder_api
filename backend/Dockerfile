@@ -22,16 +22,15 @@ USER appuser
 COPY --chown=appuser:appuser requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
-# Копирование исходного кода и конфигураций с правами пользователя
+# Копирование исходного кода с сохранением структуры src/backend
 COPY --chown=appuser:appuser src/ ./src/
 COPY --chown=appuser:appuser alembic.ini ./
 COPY --chown=appuser:appuser migrations/ ./migrations/
 
-# Открытие порта
 EXPOSE 8000
 
-# Healthcheck на /health эндпоинт
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"
+
 
 CMD ["python", "-m", "uvicorn", "backend.main:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
