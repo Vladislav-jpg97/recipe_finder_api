@@ -69,15 +69,17 @@ class RecipeService:
             rating=recipe.rating,
             servings=recipe.servings,
             calories_per_serving=recipe.calories_per_serving,
-            author_id=author_id,  # <-- Записываем ID автора
+            author_id=author_id,
             ingredients=ingredients,
         )
+        created_recipe = await self.repo.add(new_recipe)
 
-        await self.repo.add(new_recipe)
         await self.session.commit()
-        await self.session.refresh(new_recipe)
+
+        result_recipe = await self.repo.get_by_id(created_recipe.id)
+
         await self.cache_service.delete_pattern("recipe:list:*")
-        return new_recipe
+        return result_recipe
 
     async def update(
             self,
@@ -86,7 +88,8 @@ class RecipeService:
             user_id: int,
             ingredient_ids: list[int] | None = None
     ) -> Recipe:
-        recipe = await self.repo.get_by_id(recipe_id)
+        # Получаем саму модель, а не словарь из кэша
+        recipe = await self.repo.get_model_by_id(recipe_id)
         if not recipe:
             raise HTTPException(status_code=404, detail="Recipe not found")
 
@@ -110,17 +113,27 @@ class RecipeService:
             setattr(recipe, k, v)
 
         await self.session.commit()
-        await self.session.refresh(recipe)
+
+        # После коммита возвращаем актуальные данные через получение по ID (или повторный запрос)
+        updated_recipe = await self.repo.get_by_id(recipe_id)
+
         await self.cache_service.delete(CacheKeys.recipe_detail(recipe_id))
         await self.cache_service.delete_pattern("recipe:list:*")
-        return recipe
+        return updated_recipe
 
-    async def delete(self, recipe_id: int,user_id: int,) -> None:
-        recipe = await self.repo.get_by_id(recipe_id)
+    async def delete(self, recipe_id: int, user_id: int) -> None:
+        # Получаем чистую модель из базы, чтобы были доступны атрибуты
+        recipe = await self.repo.get_model_by_id(recipe_id)
         if not recipe:
             raise HTTPException(status_code=404, detail="Recipe not found")
-        if recipe.author_id != user_id.id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+
+        # Сравниваем напрямую author_id (int) и user_id (int)
+        if recipe.author_id != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions"
+            )
+
         await self.session.delete(recipe)
         await self.session.commit()
         await self.cache_service.delete(CacheKeys.recipe_detail(recipe_id))

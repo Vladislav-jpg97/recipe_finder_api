@@ -36,11 +36,15 @@ async def get_top_rated_recipes(
     filters.sort_direction = "desc"
     pagination = PaginationParams(page=1, size=limit)
     page = await service.get_paginated(pagination, filters)
+
+    # Корректно достаем список как из объекта пагинации, так и из словаря (кэша)
+    if isinstance(page, dict):
+        return page.get("items", [])
     return page.items
 
 
 @router.get("/top", response_model=list[RecipeDetail], summary="ТОП")
-async def get_top_rated_recipes(
+async def get_top_rated_recipes_alt(
         service: RecipeServiceDep,
         limit: int = Query(default=10, ge=1, le=50),
 ) -> list[RecipeDetail]:
@@ -61,10 +65,10 @@ async def get_recipe(
 
 @router.post(
     "/",
+    response_model=RecipeDetail,
     status_code=status.HTTP_201_CREATED,
     summary="Создать рецепт"
 )
-@router.post("/", response_model=RecipeCreate, status_code=status.HTTP_201_CREATED)
 async def create_recipe(
         data: RecipeCreate,
         recipe_service: RecipeServiceDep,
@@ -74,12 +78,12 @@ async def create_recipe(
     return await recipe_service.create(data, author_id=current_user.id, ingredient_ids=ingredient_ids)
 
 
-@router.patch(
+@router.put(
     "/{recipe_id}",
+    response_model=RecipeDetail,
     status_code=status.HTTP_200_OK,
     summary="Обновить рецепт"
 )
-@router.put("/{recipe_id}", response_model=RecipeCreate)
 async def update_recipe(
         recipe_id: int,
         data: RecipeUpdate,

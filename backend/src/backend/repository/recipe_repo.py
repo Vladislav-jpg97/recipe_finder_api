@@ -16,6 +16,18 @@ class RecipeRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
+    async def get_model_by_id(self, recipe_id: int) -> Recipe | None:
+        stmt = (
+            select(Recipe)
+            .options(
+                selectinload(Recipe.cuisine),
+                selectinload(Recipe.ingredients)
+            )
+            .where(Recipe.id == recipe_id)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().one_or_none()
+
     async def get_all(self) -> list[Recipe]:
         stmt = select(Recipe).order_by(Recipe.title)
         result = await self.session.execute(stmt)
@@ -60,8 +72,16 @@ class RecipeRepository:
     async def add(self, recipe: Recipe) -> Recipe:
         self.session.add(recipe)
         await self.session.flush()
-        await self.session.refresh(recipe)
-        return recipe
+        stmt = (
+            select(Recipe)
+            .options(
+                selectinload(Recipe.cuisine),
+                selectinload(Recipe.ingredients)
+            )
+            .where(Recipe.id == recipe.id)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().one()
 
     async def delete(self, recipe: Recipe) -> None:
         await self.session.delete(recipe)
@@ -120,15 +140,16 @@ class RecipeRepository:
         stmt = query.offset(pagination.offset).limit(pagination.limit)
 
         result = await self.session.execute(stmt)
-        recipe = result.scalars().all()
+        recipes = result.scalars().all()
+        recipe_details = [RecipeDetail.model_validate(recipe) for recipe in recipes]
+
         page_obj = Page.create(
             total=total,
-            items=recipe,
+            items=recipe_details,
             params=pagination
         )
         serialized_data = page_obj.model_dump(mode="json")
 
-        # 5. Добавили await для сохранения списка в кэш
         await cache.set(cache_key, json.dumps(serialized_data), ttl=300)
         return serialized_data
 
